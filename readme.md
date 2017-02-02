@@ -3,8 +3,8 @@ A(n other) gridded workspace manager for the [i3 Window Manager](https://i3wm.or
 
 ## Beta version !
 
-As the core functionallity is working (moving to workspaces), no move-window-to-workspace function is implemented yet.
-Also, all of this is not totaly user-friendly. Configuration will soon be updated.
+As the core functionallity is working (moving to workspaces, move-container-to-workspace), all of this is not totaly user-friendly.
+Configuration may be updated soon.
 
 ## Installation
 
@@ -15,8 +15,9 @@ Also, all of this is not totaly user-friendly. Configuration will soon be update
   - run `i3-grid.py print-i3-conf` and copy/paste outputed lines to your i3 config file
   - restart i3 inplace (`$mod+Shift+r` by default)
 
+(do not move the program then, or run `i3-grid.py print-i3-conf` again and replace generated lines)
+
 ## TODO
 
-  - implement move-window-to-desktop
-  - remove ini file to pass all conf by arguments. After all, this is not intended to be called manually, and all i3 conf stuff should be on i3 conf file
   - display a nice fullscreen grid overlay showing workspaces when jumping
+  - remove ini file to pass all conf by arguments ? After all, this is not intended to be called manually, and all i3 conf stuff should be on i3 conf file

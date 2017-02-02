@@ -48,6 +48,7 @@ def get_id_on_direction(direction):
     >>> get_id_on_direction('right')
     7
     '''
+    assert direction in ['up', 'down', 'left', 'right']
     current_row, current_col = current_ws_coords
     new_id = None
     if direction == 'up':
@@ -75,6 +76,12 @@ def display_workspace(id):
     print "displaying workspace {}".format(id)
     i3.command("workspace {}".format(id))
 
+def move_container_to(id):
+    print "move focused containter to workspace {}".format(id)
+    i3.command("move container to workspace {}".format(id))
+    if conf.getboolean('main', 'follow-container-on-move'):
+        display_workspace(id)
+
 
 ## Initialisation
 # ini file parse
@@ -101,12 +108,14 @@ current_ws_coords = id_to_coords(current_ws_id)
 ## Did user asked to print lines to add to i3 conf ?
 if args['print-i3-conf']:
     command_path = os.path.realpath(__file__)
-    lines = [
-        "bindsym $mod+Ctrl+{} exec {} {}".format(direction, command_path, direction.lower())
-            for direction in ['Up', 'Down', 'Left', 'Right']
-        ]
-    print "Append this lines to your i3 conf file (usually ~/.config/i3/config):\n\n" + "\n".join(lines)
-    print "\nDon't forget to reload i3 conf !"
+    cut_here = "✂ ✂ ✂ ✂ cut here ✂ ✂ ✂ ✂\n\n"
+    lines = ["## i3-workspacesgrid config", "# Moving througth workspaces"]
+    directions = ['Up', 'Down', 'Left', 'Right']
+    lines.append("\n".join(["bindsym $mod+Ctrl+{} exec {} {}".format(direction, command_path, direction.lower()) for direction in directions]))
+    lines.append("# Moving containers to workspaces")
+    lines.append("\n".join(["bindsym $mod+Ctrl+Shift+{} exec {} send{}".format(direction, command_path, direction) for direction in directions]))
+    print "Append this lines to your i3 conf file (usually ~/.config/i3/config):\n\n\n" + cut_here + "\n".join(lines)
+    print "\n" + cut_here + "Don't forget to reload i3 conf !"
     sys.exit()
 
 ## Do the job
@@ -116,8 +125,9 @@ for command in ['up', 'down', 'left', 'right', 'sendUp', 'sendDown', 'sendLeft',
         re_match = re.search('send(.*)', command)  # is this command begins with "send" ?
         if re_match:
             # this command begins with "send"
-            direction = re_match.group(1).lower()
-            sys.exit("Not implemented yet")
+            direction = re_match.group(1)
+            new_id = get_id_on_direction(direction.lower())
+            move_container_to(new_id)
         else:
             new_id = get_id_on_direction(command)
             print "moving to {}".format(new_id)
