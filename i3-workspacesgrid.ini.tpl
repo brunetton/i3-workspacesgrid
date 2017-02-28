@@ -6,3 +6,8 @@ height = 3
 loop = false
 # do we want to jump to workspace after moving a container to it ?
 follow-container-on-move = true
+# do we want to jump back to last workspace if asking to jump to same workspace twice ?
+jump-back = true
+
+[server]
+port = 8080
