@@ -1,5 +1,5 @@
 # i3-workspacesgrid
-A(n other) gridded workspace manager for the [i3 Window Manager](https://i3wm.org/)
+A(nother) gridded workspace manager for the [i3 Window Manager](https://i3wm.org/)
 
 ## Beta version !
 
