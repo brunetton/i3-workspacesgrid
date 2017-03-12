@@ -93,6 +93,7 @@ def move_container_to(id):
     print "move focused containter to workspace {}".format(id)
     i3.command("move container to workspace {}".format(id))
     if conf.getboolean('main', 'follow-container-on-move'):
+        state['last_ws_id'] = state['current_ws_id']
         display_workspace(id)
 
 def try_to_run(shell_command):
