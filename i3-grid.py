@@ -165,11 +165,11 @@ if args['print-i3-conf']:
     print cut_here
     print "## i3-workspacesgrid config"
     print "# Direct acces to desktops"
-    command = "cat {} | sed -n -r 's|(\s*#\s*)bindsym \$mod\+([^ ]+) workspace ([0-9]+)\s*|bindsym \$mod\+\\2 exec curl http://localhost:{}/jump/\\3|p'"
+    command = "cat {} | sed -n -r 's|(\s*#\s*)?bindsym \$mod\+([^ ]+) workspace ([0-9]+)\s*|bindsym \$mod\+\\2 exec curl http://localhost:{}/jump/\\3|p'"
     command = command.format(I3_CONFIG_FILE, conf.getint('server', 'port'))
     try_to_run(command)
     print "# Direct sending containers to workspaces"
-    command = "cat {} | sed -n -r 's|(\s*#\s*)bindsym \$mod\+([^ ]+) move.+workspace ([0-9]+)\s*|bindsym \$mod\+\\2 exec curl http://localhost:{}/send/\\3|p'"
+    command = "cat {} | sed -n -r 's|(\s*#\s*)?bindsym \$mod\+([^ ]+) move.+workspace ([0-9]+)\s*|bindsym \$mod\+\\2 exec curl http://localhost:{}/send/\\3|p'"
     command = command.format(I3_CONFIG_FILE, conf.getint('server', 'port'))
     try_to_run(command)
     # New commands
