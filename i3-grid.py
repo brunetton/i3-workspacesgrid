@@ -96,11 +96,14 @@ def move_container_to(id):
         state['last_ws_id'] = state['current_ws_id']
         display_workspace(id)
 
-def try_to_run(shell_command):
-    errors = subprocess.call(command, shell=True)
-    if errors:
-        print "Errors occured while running command:\n{}".format(command)
-
+def try_to_run(command, shouldnt_be_empty=False):
+    try:
+        cmnd_output = subprocess.check_output(command, stderr=subprocess.STDOUT, shell=True);
+    except subprocess.CalledProcessError as exc:             # subprocess returned non 0 output code
+        raise Exception("Status : FAIL", exc.returncode, exc.output)
+    if shouldnt_be_empty and not cmnd_output:
+        raise Exception("Error: last command returned empty string. This shouldn't happen. Command was:\n{}".format(command))
+    return cmnd_output
 
 # Class to handle incoming requests
 class myHandler(BaseHTTPRequestHandler):
@@ -159,19 +162,18 @@ if args['print-i3-conf']:
             "cat {} | sed -n -r '/bindsym \$mod\+([^ ]+) move.+workspace ([0-9]+)\s*/p'"
         ]:
         command = command.format(I3_CONFIG_FILE)
-        try_to_run(command)
-        print
+        print try_to_run(command, shouldnt_be_empty=True)
     print "- 2: **Add** this lines into your config file:\n"
     print cut_here
     print "## i3-workspacesgrid config"
     print "# Direct acces to desktops"
     command = "cat {} | sed -n -r 's|(\s*#\s*)?bindsym \$mod\+([^ ]+) workspace ([0-9]+)\s*|bindsym \$mod\+\\2 exec curl http://localhost:{}/jump/\\3|p'"
     command = command.format(I3_CONFIG_FILE, conf.getint('server', 'port'))
-    try_to_run(command)
+    print try_to_run(command, shouldnt_be_empty=True)
     print "# Direct sending containers to workspaces"
     command = "cat {} | sed -n -r 's|(\s*#\s*)?bindsym \$mod\+([^ ]+) move.+workspace ([0-9]+)\s*|bindsym \$mod\+\\2 exec curl http://localhost:{}/send/\\3|p'"
     command = command.format(I3_CONFIG_FILE, conf.getint('server', 'port'))
-    try_to_run(command)
+    print try_to_run(command, shouldnt_be_empty=True)
     # New commands
     base_url = "http://localhost:{}".format(conf.getint('server', 'port'))
     lines = ["# Moving througth workspaces"]
