@@ -186,6 +186,7 @@ if args['print-i3-conf']:
     print "Note: you can replace curl command with any equivalent command of your choice.\n"
     print "You may also want to add this line to automatically run server each time you start i3:"
     print "exec --no-startup-id {} start-server".format(os.path.realpath(__file__))
+    print "(or exec --no-startup-id xterm -hold -e '{} start-server' to monitor output)".format(os.path.realpath(__file__))
     print "\nDon't forget to reload i3 conf !\n"
     sys.exit()
 
