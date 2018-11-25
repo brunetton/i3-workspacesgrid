@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
 '''
@@ -15,8 +15,8 @@ Options:
     print-i3-conf    Print the lines to add to your i3 conf file
 '''
 
-from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
-from ConfigParser import RawConfigParser
+from http.server import BaseHTTPRequestHandler, HTTPServer
+from configparser import RawConfigParser
 import os
 import re
 import subprocess
@@ -81,16 +81,16 @@ def display_workspace(id, direct_jump=False):
         if id == state['current_ws_id'] and conf.getboolean('main', 'jump-back'):
             # jump back to where we came
             id = state['last_ws_id']
-            print "jump back to workspace {}".format(id)
+            print("jump back to workspace {}".format(id))
         else:
             # normal jump
             state['last_ws_id'] = state['current_ws_id']
-    print "jump to workspace {}".format(id)
+    print("jump to workspace {}".format(id))
     i3.command("workspace {}".format(id))
     state['current_ws_id'] = id
 
 def move_container_to(id):
-    print "move focused containter to workspace {}".format(id)
+    print("move focused containter to workspace {}".format(id))
     i3.command("move container to workspace {}".format(id))
     if conf.getboolean('main', 'follow-container-on-move'):
         state['last_ws_id'] = state['current_ws_id']
@@ -125,7 +125,7 @@ class myHandler(BaseHTTPRequestHandler):
             assert new_id
             move_container_to(int(new_id))
         else:
-            print 'Unknown command: "{}". See --help message and readme for more informations.'.format(command)
+            print('Unknown command: "{}". See --help message and readme for more informations.'.format(command))
         self.end_headers()
         return
 
@@ -155,25 +155,25 @@ state['last_ws_id'] = state['current_ws_id']
 ## Did user asked to print lines to add to i3 conf ?
 if args['print-i3-conf']:
     cut_here = "✂ ✂ ✂ ✂ cut here ✂ ✂ ✂ ✂\n\n"
-    print "In order to use i3-workspacesgrid, you'll need to:\n"
-    print "- 1: **Comment** this lines into your config file:\n"
+    print("In order to use i3-workspacesgrid, you'll need to:\n")
+    print("- 1: **Comment** this lines into your config file:\n")
     for command in [
             "cat {} | sed -n -r '/bindsym \$mod\+([^ ]+) workspace ([0-9]+)\s*/p'",
             "cat {} | sed -n -r '/bindsym \$mod\+([^ ]+) move.+workspace ([0-9]+)\s*/p'"
         ]:
         command = command.format(I3_CONFIG_FILE)
-        print try_to_run(command, shouldnt_be_empty=True)
-    print "- 2: **Add** this lines into your config file:\n"
-    print cut_here
-    print "## i3-workspacesgrid config"
-    print "# Direct acces to desktops"
+        print(try_to_run(command, shouldnt_be_empty=True))
+    print("- 2: **Add** this lines into your config file:\n")
+    print(cut_here)
+    print("## i3-workspacesgrid config")
+    print("# Direct acces to desktops")
     command = "cat {} | sed -n -r 's|(\s*#\s*)?bindsym \$mod\+([^ ]+) workspace ([0-9]+)\s*|bindsym \$mod\+\\2 exec curl http://localhost:{}/jump/\\3|p'"
     command = command.format(I3_CONFIG_FILE, conf.getint('server', 'port'))
-    print try_to_run(command, shouldnt_be_empty=True)
-    print "# Direct sending containers to workspaces"
+    print(try_to_run(command, shouldnt_be_empty=True))
+    print("# Direct sending containers to workspaces")
     command = "cat {} | sed -n -r 's|(\s*#\s*)?bindsym \$mod\+([^ ]+) move.+workspace ([0-9]+)\s*|bindsym \$mod\+\\2 exec curl http://localhost:{}/send/\\3|p'"
     command = command.format(I3_CONFIG_FILE, conf.getint('server', 'port'))
-    print try_to_run(command, shouldnt_be_empty=True)
+    print(try_to_run(command, shouldnt_be_empty=True))
     # New commands
     base_url = "http://localhost:{}".format(conf.getint('server', 'port'))
     lines = ["# Moving througth workspaces"]
@@ -181,22 +181,22 @@ if args['print-i3-conf']:
     lines.append("\n".join(["bindsym $mod+Ctrl+{} exec curl {}/{}".format(direction, base_url, direction.lower()) for direction in directions]))
     lines.append("# Sending containers to workspaces")
     lines.append("\n".join(["bindsym $mod+Ctrl+Shift+{} exec curl {}/send/{}".format(direction, base_url, direction.lower()) for direction in directions]))
-    print "\n".join(lines)
-    print "\n" + cut_here
-    print "Note: you can replace curl command with any equivalent command of your choice.\n"
-    print "You may also want to add this line to automatically run server each time you start i3:"
-    print "exec --no-startup-id {} start-server".format(os.path.realpath(__file__))
-    print "(or exec --no-startup-id xterm -hold -e '{} start-server' to monitor output)".format(os.path.realpath(__file__))
-    print "\nDon't forget to reload i3 conf !\n"
+    print("\n".join(lines))
+    print("\n" + cut_here)
+    print("Note: you can replace curl command with any equivalent command of your choice.\n")
+    print("You may also want to add this line to automatically run server each time you start i3:")
+    print("exec --no-startup-id {} start-server".format(os.path.realpath(__file__)))
+    print("(or exec --no-startup-id xterm -hold -e '{} start-server' to monitor output)".format(os.path.realpath(__file__)))
+    print("\nDon't forget to reload i3 conf !\n")
     sys.exit()
 
 ## User asked to run server; so run server
 if args['start-server']:
     server_port = conf.getint('server', 'port')
     server = HTTPServer(('', server_port), myHandler)
-    print 'Listening on {} ...'.format(server_port)
+    print('Listening on {} ...'.format(server_port))
     try:
         server.serve_forever()
     except KeyboardInterrupt:
-        print '^C received, shutting down the web server.'
+        print('^C received, shutting down the web server.')
         server.socket.close()
