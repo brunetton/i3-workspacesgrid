@@ -98,12 +98,12 @@ def move_container_to(id):
 
 def try_to_run(command, shouldnt_be_empty=False):
     try:
-        cmnd_output = subprocess.check_output(command, stderr=subprocess.STDOUT, shell=True);
+        cmnd_output = subprocess.check_output(command, stderr=subprocess.STDOUT, shell=True)
     except subprocess.CalledProcessError as exc:             # subprocess returned non 0 output code
         raise Exception("Status : FAIL", exc.returncode, exc.output)
     if shouldnt_be_empty and not cmnd_output:
         raise Exception("Error: last command returned empty string. This shouldn't happen. Command was:\n{}".format(command))
-    return cmnd_output
+    return cmnd_output.decode("utf-8") 
 
 # Class to handle incoming requests
 class myHandler(BaseHTTPRequestHandler):

@@ -1,0 +1,2 @@
+docopt
+i3ipc
