@@ -10,6 +10,7 @@ A graphical feedback should be added.
 ## Installation
 
   - install dependencies (`pip install -r requirements.txt`)
+  - install `curl` (`apt install curl` in Debian/Ubuntu)
   - download this files to anywhere you want in your system
   - copy (or move) `i3-workspacesgrid.ini.tpl` to `i3-workspacesgrid.ini`
   - edit `i3-workspacesgrid.ini` to match your needs
