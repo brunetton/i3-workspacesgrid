@@ -90,12 +90,14 @@ def display_workspace(id, direct_jump=False):
             # normal jump
             state['last_ws_id'] = state['current_ws_id']
     print("jump to workspace {}".format(id))
+    i3 = i3ipc.Connection()
     i3.command("workspace {}".format(id))
     state['current_ws_id'] = id
 
 
 def move_container_to(id):
     print("move focused containter to workspace {}".format(id))
+    i3 = i3ipc.Connection()
     i3.command("move container to workspace {}".format(id))
     if conf.getboolean('main', 'follow-container-on-move'):
         state['last_ws_id'] = state['current_ws_id']
@@ -138,7 +140,45 @@ class myHandler(BaseHTTPRequestHandler):
         return
 
 
-## Initialisation
+def print_conf():
+    cut_here = "✂ ✂ ✂ ✂ cut here ✂ ✂ ✂ ✂\n\n"
+    print("In order to use i3-workspacesgrid, you'll need to:\n")
+    print("- 1: **Comment** this lines into your config file:\n")
+    for command in [
+        "cat {} | sed -n -r '/bindsym \$mod\+([^ ]+) workspace ([0-9]+)\s*/p'",
+        "cat {} | sed -n -r '/bindsym \$mod\+([^ ]+) move.+workspace ([0-9]+)\s*/p'"
+    ]:
+        command = command.format(I3_CONFIG_FILE)
+        print(try_to_run(command, shouldnt_be_empty=True))
+    print("- 2: **Add** this lines into your config file:\n")
+    print(cut_here)
+    print("## i3-workspacesgrid config")
+    print("# Direct acces to desktops")
+    command = "cat {} | sed -n -r 's|(\s*#\s*)?bindsym \$mod\+([^ ]+) workspace ([0-9]+)\s*|bindsym \$mod\+\\2 exec curl http://localhost:{}/jump/\\3|p'"
+    command = command.format(I3_CONFIG_FILE, conf.getint('server', 'port'))
+    print(try_to_run(command, shouldnt_be_empty=True))
+    print("# Direct sending containers to workspaces")
+    command = "cat {} | sed -n -r 's|(\s*#\s*)?bindsym \$mod\+([^ ]+) move.+workspace ([0-9]+)\s*|bindsym \$mod\+\\2 exec curl http://localhost:{}/send/\\3|p'"
+    command = command.format(I3_CONFIG_FILE, conf.getint('server', 'port'))
+    print(try_to_run(command, shouldnt_be_empty=True))
+    # New commands
+    base_url = "http://localhost:{}".format(conf.getint('server', 'port'))
+    lines = ["# Moving througth workspaces"]
+    directions = ['Up', 'Down', 'Left', 'Right']
+    lines.append("\n".join(["bindsym $mod+Ctrl+{} exec curl {}/{}".format(direction,
+                                                                          base_url, direction.lower()) for direction in directions]))
+    lines.append("# Sending containers to workspaces")
+    lines.append("\n".join(["bindsym $mod+Ctrl+Shift+{} exec curl {}/send/{}".format(direction,
+                                                                                     base_url, direction.lower()) for direction in directions]))
+    print("\n".join(lines))
+    print("\n" + cut_here)
+    print("Note: you can replace curl command with any equivalent command of your choice.\n")
+    print("You may also want to add this line to automatically run server each time you start i3:")
+    print("exec --no-startup-id {} start-server".format(os.path.realpath(__file__)))
+    print("(or exec --no-startup-id xterm -hold -e '{} start-server' to monitor output)".format(os.path.realpath(__file__)))
+    print("\nDon't forget to reload i3 conf !\n")
+
+
 # ini file parse
 global conf
 conf = RawConfigParser()
@@ -160,45 +200,12 @@ current_ws = i3.get_tree().find_focused().workspace()
 state['current_ws_id'] = int(current_ws.name)
 state['last_ws_id'] = state['current_ws_id']
 
-## Did user asked to print lines to add to i3 conf ?
+# Did user asked to print lines to add to i3 conf ?
 if args['print-i3-conf']:
-    cut_here = "✂ ✂ ✂ ✂ cut here ✂ ✂ ✂ ✂\n\n"
-    print("In order to use i3-workspacesgrid, you'll need to:\n")
-    print("- 1: **Comment** this lines into your config file:\n")
-    for command in [
-            "cat {} | sed -n -r '/bindsym \$mod\+([^ ]+) workspace ([0-9]+)\s*/p'",
-            "cat {} | sed -n -r '/bindsym \$mod\+([^ ]+) move.+workspace ([0-9]+)\s*/p'"
-        ]:
-        command = command.format(I3_CONFIG_FILE)
-        print(try_to_run(command, shouldnt_be_empty=True))
-    print("- 2: **Add** this lines into your config file:\n")
-    print(cut_here)
-    print("## i3-workspacesgrid config")
-    print("# Direct acces to desktops")
-    command = "cat {} | sed -n -r 's|(\s*#\s*)?bindsym \$mod\+([^ ]+) workspace ([0-9]+)\s*|bindsym \$mod\+\\2 exec curl http://localhost:{}/jump/\\3|p'"
-    command = command.format(I3_CONFIG_FILE, conf.getint('server', 'port'))
-    print(try_to_run(command, shouldnt_be_empty=True))
-    print("# Direct sending containers to workspaces")
-    command = "cat {} | sed -n -r 's|(\s*#\s*)?bindsym \$mod\+([^ ]+) move.+workspace ([0-9]+)\s*|bindsym \$mod\+\\2 exec curl http://localhost:{}/send/\\3|p'"
-    command = command.format(I3_CONFIG_FILE, conf.getint('server', 'port'))
-    print(try_to_run(command, shouldnt_be_empty=True))
-    # New commands
-    base_url = "http://localhost:{}".format(conf.getint('server', 'port'))
-    lines = ["# Moving througth workspaces"]
-    directions = ['Up', 'Down', 'Left', 'Right']
-    lines.append("\n".join(["bindsym $mod+Ctrl+{} exec curl {}/{}".format(direction, base_url, direction.lower()) for direction in directions]))
-    lines.append("# Sending containers to workspaces")
-    lines.append("\n".join(["bindsym $mod+Ctrl+Shift+{} exec curl {}/send/{}".format(direction, base_url, direction.lower()) for direction in directions]))
-    print("\n".join(lines))
-    print("\n" + cut_here)
-    print("Note: you can replace curl command with any equivalent command of your choice.\n")
-    print("You may also want to add this line to automatically run server each time you start i3:")
-    print("exec --no-startup-id {} start-server".format(os.path.realpath(__file__)))
-    print("(or exec --no-startup-id xterm -hold -e '{} start-server' to monitor output)".format(os.path.realpath(__file__)))
-    print("\nDon't forget to reload i3 conf !\n")
+    print_conf()
     sys.exit()
 
-## User asked to run server; so run server
+# User asked to run server; so run server
 if args['start-server']:
     server_port = conf.getint('server', 'port')
     server = HTTPServer(('', server_port), myHandler)
