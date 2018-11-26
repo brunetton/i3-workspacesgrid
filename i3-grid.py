@@ -126,7 +126,6 @@ class myHandler(BaseHTTPRequestHandler):
             move_container_to(int(new_id))
         else:
             print('Unknown command: "{}". See --help message and readme for more informations.'.format(command))
-        self.end_headers()
         return
 
 
