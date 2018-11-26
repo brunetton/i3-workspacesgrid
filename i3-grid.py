@@ -29,15 +29,18 @@ import i3ipc
 CONFIG_FILE = os.path.join(os.path.dirname(__file__), 'i3-workspacesgrid.ini')
 I3_CONFIG_FILE = "~/.config/i3/config"
 
+
 def coords_to_id(row, col):
     ''' Get workspace id ([1-n]) from coords ([0-n], [0-n])
     '''
     return row * state['grid_width'] + col + 1
 
+
 def id_to_coords(id):
     ''' Get coords ([0-n], [0-n]) from id ([1-n])
     '''
     return int((id - 1) / state['grid_width']), (id - 1) % state['grid_width']
+
 
 def get_id_on_direction(direction):
     ''' Get coords ([0-n], [0-n]) for workspace in grid in given direction.
@@ -72,6 +75,7 @@ def get_id_on_direction(direction):
         new_id = state['current_ws_id']
     return new_id
 
+
 def display_workspace(id, direct_jump=False):
     ''' Goto given workspace id.
         direct_jump: is this move a "direct" move ? ie, [1-10] workspace, directly adressed via shortkey
@@ -89,12 +93,14 @@ def display_workspace(id, direct_jump=False):
     i3.command("workspace {}".format(id))
     state['current_ws_id'] = id
 
+
 def move_container_to(id):
     print("move focused containter to workspace {}".format(id))
     i3.command("move container to workspace {}".format(id))
     if conf.getboolean('main', 'follow-container-on-move'):
         state['last_ws_id'] = state['current_ws_id']
         display_workspace(id)
+
 
 def try_to_run(command, shouldnt_be_empty=False):
     try:
@@ -103,10 +109,13 @@ def try_to_run(command, shouldnt_be_empty=False):
         raise Exception("Status : FAIL", exc.returncode, exc.output)
     if shouldnt_be_empty and not cmnd_output:
         raise Exception("Error: last command returned empty string. This shouldn't happen. Command was:\n{}".format(command))
-    return cmnd_output.decode("utf-8") 
+    return cmnd_output.decode("utf-8")
 
-# Class to handle incoming requests
+
 class myHandler(BaseHTTPRequestHandler):
+    """Class to handle incoming requests
+    """
+
     def do_GET(self):
         command = self.path[1:]  # "/something" => "something"
         if command in ['up', 'down', 'left', 'right']:
