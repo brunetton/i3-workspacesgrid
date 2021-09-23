@@ -1,8 +1,6 @@
 # i3-workspacesgrid
 A(nother) gridded workspace manager for the [i3 Window Manager](https://i3wm.org/)
 
-## Beta version !
-
 As the core functionallity is working (moving to workspaces, move-container-to-workspace), all of this is not totaly user-friendly.
 
 A graphical feedback should be added.
