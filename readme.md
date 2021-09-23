@@ -1,8 +1,13 @@
 # i3-workspacesgrid
-A(nother) gridded workspace manager for the [i3 Window Manager](https://i3wm.org/)
+A(nother) gridded workspace manager for the [i3 Window Manager](https://i3wm.org/). This provides a virtual gird for workspaces (example: 4x5 workspaces).
 
-As the core functionallity is working (moving to workspaces, move-container-to-workspace), all of this is not totaly user-friendly.
+Features (keyboard shortcuts):
+- move to the left/right workspace
+- move to the upper/lower workspace
+- move current window to left/right workspace
+- move current window to upper/lower workspace
 
+As the core functionallity is working (moving to workspaces, move-container-to-workspace), all of this is not super user-friendly.
 A graphical feedback should be added.
 
 ## Installation
